@@ -5,6 +5,7 @@ For more details about this component, please refer to the documentation at
 https://home-assistant.io/components/wink/
 """
 import logging
+import time
 
 import voluptuous as vol
 
@@ -15,7 +16,7 @@ from homeassistant.const import (
 from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
 
-REQUIREMENTS = ['python-wink==1.2.1', 'pubnubsub-handler==1.0.1']
+REQUIREMENTS = ['python-wink==1.2.3', 'pubnubsub-handler==1.0.2']
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +117,17 @@ def setup(hass, config):
         _LOGGER.info("Refreshing Wink states from API")
         for entity in hass.data[DOMAIN]['entities']:
             entity.schedule_update_ha_state(True)
+            time.sleep(1)
     hass.services.register(DOMAIN, 'Refresh state from Wink', force_update)
+
+    def resubscription(call):
+        """Stop and restart the PubNub connection."""
+        hass.data[DOMAIN]['pubnub'].unsubscribe()
+        hass.data[DOMAIN]['pubnub'].subscribe()
+        for entity in hass.data[DOMAIN]['entities']:
+            entity.schedule_update_ha_state(True)
+            time.sleep(1)
+    hass.services.register(DOMAIN, 'Resubscribe to PubNub', resubscription)
 
     def pull_new_devices(call):
         """Pull new devices added to users Wink account since startup."""

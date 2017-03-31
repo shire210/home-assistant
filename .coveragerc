@@ -225,6 +225,7 @@ omit =
     homeassistant/components/light/hue.py
     homeassistant/components/light/hyperion.py
     homeassistant/components/light/lifx.py
+    homeassistant/components/light/lifx_legacy.py
     homeassistant/components/light/limitlessled.py
     homeassistant/components/light/osramlightify.py
     homeassistant/components/light/tikteck.py
@@ -235,6 +236,7 @@ omit =
     homeassistant/components/light/zengge.py
     homeassistant/components/lirc.py
     homeassistant/components/lock/nuki.py
+    homeassistant/components/lock/lockitron.py
     homeassistant/components/media_player/anthemav.py
     homeassistant/components/media_player/apple_tv.py
     homeassistant/components/media_player/aquostv.py
@@ -360,6 +362,7 @@ omit =
     homeassistant/components/sensor/miflora.py
     homeassistant/components/sensor/modem_callerid.py
     homeassistant/components/sensor/mqtt_room.py
+    homeassistant/components/sensor/mvglive.py
     homeassistant/components/sensor/netdata.py
     homeassistant/components/sensor/neurio_energy.py
     homeassistant/components/sensor/nut.py
@@ -436,7 +439,6 @@ omit =
     homeassistant/components/zeroconf.py
     homeassistant/components/zwave/__init__.py
     homeassistant/components/zwave/util.py
-    homeassistant/components/zwave/workaround.py
 
 
 [report]
