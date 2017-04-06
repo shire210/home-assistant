@@ -68,7 +68,7 @@ DATA_ZWAVE_DICT = 'zwave_devices'
 NETWORK = None
 
 RENAME_NODE_SCHEMA = vol.Schema({
-    vol.Required(ATTR_ENTITY_ID): cv.entity_id,
+    vol.Required(const.ATTR_NODE_ID): vol.Coerce(int),
     vol.Required(const.ATTR_NAME): cv.string,
 })
 SET_CONFIG_PARAMETER_SCHEMA = vol.Schema({
@@ -393,8 +393,7 @@ def setup(hass, config):
 
     def rename_node(service):
         """Rename a node."""
-        state = hass.states.get(service.data.get(ATTR_ENTITY_ID))
-        node_id = state.attributes.get(const.ATTR_NODE_ID)
+        node_id = service.data.get(const.ATTR_NODE_ID)
         node = NETWORK.nodes[node_id]
         name = service.data.get(const.ATTR_NAME)
         node.name = name
@@ -669,6 +668,7 @@ class ZWaveDeviceEntityValues():
                 continue
             self._values[name] = value
             if self._entity:
+                self._entity.value_added()
                 self._entity.value_changed()
 
             self._check_entity_ready()
@@ -777,6 +777,10 @@ class ZWaveDeviceEntity(ZWaveBaseEntity):
         """Called when a value has changed on the network."""
         if value.value_id in [v.value_id for v in self.values if v]:
             return self.value_changed()
+
+    def value_added(self):
+        """Called when a new value is added to this entity."""
+        pass
 
     def value_changed(self):
         """Called when a value for this entity's node has changed."""
