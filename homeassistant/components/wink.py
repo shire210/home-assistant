@@ -16,7 +16,7 @@ from homeassistant.const import (
 from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
 
-REQUIREMENTS = ['python-wink==1.2.3', 'pubnubsub-handler==1.0.2']
+REQUIREMENTS = ['python-wink==1.2.4', 'pubnubsub-handler==1.0.2']
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,10 +97,15 @@ def setup(hass, config):
 
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN]['entities'] = []
+    
+    def keep_alive_call():
+        pywink.wink_api_fetch()
+        pywink.get_user()
+        
     hass.data[DOMAIN]['unique_ids'] = []
     hass.data[DOMAIN]['pubnub'] = PubNubSubscriptionHandler(
         pywink.get_subscription_key(),
-        pywink.wink_api_fetch)
+        pywink.keep_alive_call)
 
     def start_subscription(event):
         """Start the pubnub subscription."""
@@ -118,7 +123,7 @@ def setup(hass, config):
         for entity in hass.data[DOMAIN]['entities']:
             entity.schedule_update_ha_state(True)
             time.sleep(1)
-    hass.services.register(DOMAIN, 'Refresh state from Wink', force_update)
+    hass.services.register(DOMAIN, 'Refresh_state_from_Wink', force_update)
 
     def resubscription(call):
         """Stop and restart the PubNub connection."""
@@ -134,7 +139,7 @@ def setup(hass, config):
         _LOGGER.info("Getting new devices from Wink API.")
         for component in WINK_COMPONENTS:
             discovery.load_platform(hass, component, DOMAIN, {}, config)
-    hass.services.register(DOMAIN, 'Add new devices', pull_new_devices)
+    hass.services.register(DOMAIN, 'Add_new_devices', pull_new_devices)
 
     # Load components for the devices in Wink that we support
     for component in WINK_COMPONENTS:
