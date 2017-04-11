@@ -238,4 +238,4 @@ class WinkDevice(Entity):
         if hasattr(self.wink, 'tamper_detected'):
             return self.wink.tamper_detected()
         else:
-return None
+            return None
