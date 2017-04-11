@@ -1,11 +1,9 @@
 """
 Support for Wink hubs.
-
 For more details about this component, please refer to the documentation at
 https://home-assistant.io/components/wink/
 """
 import logging
-import time
 
 import voluptuous as vol
 
@@ -97,15 +95,15 @@ def setup(hass, config):
 
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN]['entities'] = []
-    
+    hass.data[DOMAIN]['unique_ids'] = []
+
     def keep_alive_call():
         pywink.wink_api_fetch()
         pywink.get_user()
-        
-    hass.data[DOMAIN]['unique_ids'] = []
+
     hass.data[DOMAIN]['pubnub'] = PubNubSubscriptionHandler(
         pywink.get_subscription_key(),
-        pywink.keep_alive_call)
+        keep_alive_call)
 
     def start_subscription(event):
         """Start the pubnub subscription."""
@@ -122,17 +120,7 @@ def setup(hass, config):
         _LOGGER.info("Refreshing Wink states from API")
         for entity in hass.data[DOMAIN]['entities']:
             entity.schedule_update_ha_state(True)
-            time.sleep(1)
     hass.services.register(DOMAIN, 'Refresh_state_from_Wink', force_update)
-
-    def resubscription(call):
-        """Stop and restart the PubNub connection."""
-        hass.data[DOMAIN]['pubnub'].unsubscribe()
-        hass.data[DOMAIN]['pubnub'].subscribe()
-        for entity in hass.data[DOMAIN]['entities']:
-            entity.schedule_update_ha_state(True)
-            time.sleep(1)
-    hass.services.register(DOMAIN, 'Resubscribe to PubNub', resubscription)
 
     def pull_new_devices(call):
         """Pull new devices added to users Wink account since startup."""
@@ -250,4 +238,4 @@ class WinkDevice(Entity):
         if hasattr(self.wink, 'tamper_detected'):
             return self.wink.tamper_detected()
         else:
-            return None
+return None
