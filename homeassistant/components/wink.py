@@ -98,8 +98,7 @@ def setup(hass, config):
     hass.data[DOMAIN]['entities'] = []
     hass.data[DOMAIN]['unique_ids'] = []
     hass.data[DOMAIN]['pubnub'] = PubNubSubscriptionHandler(
-        pywink.get_subscription_key(),
-        pywink.wink_api_fetch)
+        pywink.get_subscription_key())
 
     def start_subscription(event):
         """Start the pubnub subscription."""
