@@ -116,7 +116,7 @@ def setup(hass, config):
         except:
             temp.write("Error fetching data\n")
         temp.close()
-
+    hass.services.register(DOMAIN, 'Refresh_keep_alive', keep_alive_call)
 
     hass.data[DOMAIN]['pubnub'] = PubNubSubscriptionHandler(
         pywink.get_subscription_key(),
