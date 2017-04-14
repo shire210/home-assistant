@@ -5,6 +5,8 @@ For more details about this component, please refer to the documentation at
 https://home-assistant.io/components/wink/
 """
 import logging
+import time
+import json
 
 import voluptuous as vol
 
@@ -15,7 +17,7 @@ from homeassistant.const import (
 from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
 
-REQUIREMENTS = ['python-wink==1.2.3', 'pubnubsub-handler==1.0.2']
+REQUIREMENTS = ['python-wink==1.2.4', 'pubnubsub-handler==1.0.2']
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,8 +99,28 @@ def setup(hass, config):
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN]['entities'] = []
     hass.data[DOMAIN]['unique_ids'] = []
+
+    def keep_alive_call():
+        """Call the Wink API endpoints to keep PubNub working."""
+        _LOGGER.error("Running keep alive")
+        temp = open("/config/temp.log", 'a')
+        temp.write("\nGet devices:\n\n")
+        try:
+            temp.write(json.dumps(pywink.wink_api_fetch()))
+        except:
+            temp.write("Error fetching data\n")
+        time.sleep(1)
+        temp.write("\nGet user:\n\n")
+        try:
+            temp.write(json.dumps(pywink.get_user()))
+        except:
+            temp.write("Error fetching data\n")
+        temp.close()
+
+
     hass.data[DOMAIN]['pubnub'] = PubNubSubscriptionHandler(
-        pywink.get_subscription_key())
+        pywink.get_subscription_key(),
+        keep_alive_call)
 
     def start_subscription(event):
         """Start the pubnub subscription."""
@@ -115,14 +137,14 @@ def setup(hass, config):
         _LOGGER.info("Refreshing Wink states from API")
         for entity in hass.data[DOMAIN]['entities']:
             entity.schedule_update_ha_state(True)
-    hass.services.register(DOMAIN, 'Refresh state from Wink', force_update)
+    hass.services.register(DOMAIN, 'Refresh_state_from_Wink', force_update)
 
     def pull_new_devices(call):
         """Pull new devices added to users Wink account since startup."""
         _LOGGER.info("Getting new devices from Wink API.")
         for component in WINK_COMPONENTS:
             discovery.load_platform(hass, component, DOMAIN, {}, config)
-    hass.services.register(DOMAIN, 'Add new devices', pull_new_devices)
+    hass.services.register(DOMAIN, 'Add_new_devices', pull_new_devices)
 
     # Load components for the devices in Wink that we support
     for component in WINK_COMPONENTS:
