@@ -100,10 +100,10 @@ def setup(hass, config):
     hass.data[DOMAIN]['entities'] = []
     hass.data[DOMAIN]['unique_ids'] = []
 
-    def keep_alive_call():
+    def keep_alive_call(call):
         """Call the Wink API endpoints to keep PubNub working."""
         _LOGGER.error("Running keep alive")
-        temp = open("/config/temp.log", 'a')
+        temp = open("/usr/src/app/homeassistant/temp.log", 'a')
         temp.write("\nGet devices:\n\n")
         try:
             temp.write(json.dumps(pywink.wink_api_fetch()))
