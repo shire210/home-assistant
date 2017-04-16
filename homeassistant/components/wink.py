@@ -6,11 +6,11 @@ https://home-assistant.io/components/wink/
 """
 import logging
 import time
-import json
 
 import voluptuous as vol
 
 from homeassistant.helpers import discovery
+from homeassistant.helpers.event import track_utc_time_change
 from homeassistant.const import (
     CONF_ACCESS_TOKEN, ATTR_BATTERY_LEVEL, CONF_EMAIL, CONF_PASSWORD,
     EVENT_HOMEASSISTANT_START, EVENT_HOMEASSISTANT_STOP)
@@ -99,28 +99,15 @@ def setup(hass, config):
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN]['entities'] = []
     hass.data[DOMAIN]['unique_ids'] = []
-
-    def keep_alive_call(call):
-        """Call the Wink API endpoints to keep PubNub working."""
-        _LOGGER.error("Running keep alive")
-        temp = open("/usr/src/app/homeassistant/temp.log", 'a')
-        temp.write("\nGet devices:\n\n")
-        try:
-            temp.write(json.dumps(pywink.wink_api_fetch()))
-        except:
-            temp.write("Error fetching data\n")
-        time.sleep(1)
-        temp.write("\nGet user:\n\n")
-        try:
-            temp.write(json.dumps(pywink.get_user()))
-        except:
-            temp.write("Error fetching data\n")
-        temp.close()
-    hass.services.register(DOMAIN, 'Refresh_keep_alive', keep_alive_call)
-
     hass.data[DOMAIN]['pubnub'] = PubNubSubscriptionHandler(
-        pywink.get_subscription_key(),
-        keep_alive_call)
+        pywink.get_subscription_key())
+
+    def keep_alive_call():
+        """Call the Wink API endpoints to keep PubNub working."""
+        _LOGGER.info("Polling the Wink API to keep PubNub updates flowing.")
+        pywink.wink_api_fetch()
+        time.sleep(1)
+        pywink.get_user()
 
     def start_subscription(event):
         """Start the pubnub subscription."""
@@ -149,6 +136,9 @@ def setup(hass, config):
     # Load components for the devices in Wink that we support
     for component in WINK_COMPONENTS:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
+
+    track_utc_time_change(hass, lambda now: keep_alive_call(),
+                          minute=0, second=0)
 
     return True
 
