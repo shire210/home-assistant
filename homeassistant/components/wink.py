@@ -137,7 +137,7 @@ def setup(hass, config):
     for component in WINK_COMPONENTS:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
 
-    async_track_time_interval(hass, lambda now: keep_alive_call(),
+    async_track_time_interval(hass, keep_alive_call(),
                           minute=0, second=0)
 
     return True
