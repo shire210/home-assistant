@@ -10,7 +10,7 @@ import time
 import voluptuous as vol
 
 from homeassistant.helpers import discovery
-from homeassistant.helpers.event import track_utc_time_change
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.const import (
     CONF_ACCESS_TOKEN, ATTR_BATTERY_LEVEL, CONF_EMAIL, CONF_PASSWORD,
     EVENT_HOMEASSISTANT_START, EVENT_HOMEASSISTANT_STOP)
@@ -137,7 +137,7 @@ def setup(hass, config):
     for component in WINK_COMPONENTS:
         discovery.load_platform(hass, component, DOMAIN, {}, config)
 
-    track_utc_time_change(hass, lambda now: keep_alive_call(),
+    async_track_time_interval(hass, lambda now: keep_alive_call(),
                           minute=0, second=0)
 
     return True
